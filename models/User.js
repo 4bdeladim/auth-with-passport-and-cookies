@@ -26,21 +26,26 @@ const UserSchema = new mongoose.Schema({
 });
 
 
-UserSchema.pre('save', function(next){
-    if(!this.isModified('password')) return next() ;
-    bcrypt.hash(this.password, 10, (err, hashedPassword) => {
-        if(err) return next(err)
-        this.password = hashedPassword ;
+UserSchema.pre('save',function(next){
+    if(!this.isModified('password'))
+        return next();
+    bcrypt.hash(this.password,10,(err,passwordHash)=>{
+        if(err)
+            return next(err);
+        this.password = passwordHash;
         next();
-    })
+    });
 });
 
-UserSchema.methods.comparePssword = function(password, cb){
-    bcrypt.compare(password, this.password, (err, isMatched) => {
-        if(err) return cb(err)
-        else if(!isMatched) return cb(null, isMatched)
-        return cb(null, this)
-    })
-} 
-
+UserSchema.methods.comparePassword = function(password,cb){
+    bcrypt.compare(password,this.password,(err,isMatch)=>{
+        if(err)
+            return cb(err);
+        else{
+            if(!isMatch)
+                return cb(null,isMatch);
+            return cb(null,this);
+        }
+    });
+}
 module.exports = mongoose.model('User', UserSchema);
